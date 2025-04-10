@@ -10,16 +10,19 @@ interface AppRunnerStackProps extends cdk.StackProps {
 }
 
 export class AppRunnerStack extends cdk.Stack {
+  // Add this line to expose the role to other stacks
+  public readonly instanceRole: iam.Role;
+
   constructor(scope: Construct, id: string, props: AppRunnerStackProps) {
     super(scope, id, props);
 
-    // Create IAM role for App Runner
-    const instanceRole = new iam.Role(this, 'AppRunnerInstanceRole', {
+    // Change 'const' to 'this.' to make it a class property
+    this.instanceRole = new iam.Role(this, 'AppRunnerInstanceRole', {
       assumedBy: new iam.ServicePrincipal('tasks.apprunner.amazonaws.com'),
     });
 
     // Add permissions to access SSM parameters
-    instanceRole.addToPolicy(
+    this.instanceRole.addToPolicy(
       new iam.PolicyStatement({
         actions: ['ssm:GetParameter', 'ssm:GetParameters'],
         resources: ['arn:aws:ssm:*:*:parameter/database/*'],
@@ -35,7 +38,7 @@ export class AppRunnerStack extends cdk.Stack {
         repository: props.nodejsRepo,
         tagOrDigest: 'latest',
       }),
-      instanceRole,
+      instanceRole: this.instanceRole,  // Use the class property
     });
 
     // Create FastAPI App Runner Service
@@ -47,7 +50,7 @@ export class AppRunnerStack extends cdk.Stack {
         repository: props.fastapiRepo,
         tagOrDigest: 'latest',
       }),
-      instanceRole,
+      instanceRole: this.instanceRole,  // Use the class property
     });
   }
 }
