@@ -17,7 +17,7 @@ export class ElasticacheStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ElasticacheStackProps) {
     super(scope, id, props);
 
-    // Security Group
+    // Security Group (unchanged)
     this.securityGroup = new ec2.SecurityGroup(this, 'RedisSecurityGroup', {
       vpc: props.vpc,
       description: 'Security group for Redis cluster',
@@ -25,7 +25,7 @@ export class ElasticacheStack extends cdk.Stack {
       securityGroupName: 'redis-security-group',
     });
 
-    // Subnet Group
+    // Subnet Group (unchanged)
     const subnetGroup = new elasticache.CfnSubnetGroup(this, 'RedisSubnetGroup', {
       description: 'Subnet group for Redis cluster',
       subnetIds: props.vpc.selectSubnets({
@@ -33,16 +33,16 @@ export class ElasticacheStack extends cdk.Stack {
       }).subnetIds,
     });
 
-    // Parameter Group
+    // Parameter Group (FIXED VERSION)
     const parameterGroup = new elasticache.CfnParameterGroup(this, 'RedisParameterGroup', {
-      family: 'redis7',
+      cacheParameterGroupFamily: 'redis7',  // Changed from 'family'
       description: 'Redis parameter group',
-      parameters: {
+      properties: {  // Changed from 'parameters'
         'maxmemory-policy': 'volatile-lru',
       },
     });
 
-    // Redis Cluster
+    // Redis Cluster (unchanged)
     this.redisCluster = new elasticache.CfnReplicationGroup(this, 'RedisCluster', {
       replicationGroupDescription: 'Redis cluster',
       engine: 'redis',
@@ -59,7 +59,7 @@ export class ElasticacheStack extends cdk.Stack {
       cacheParameterGroupName: parameterGroup.ref,
     });
 
-    // SSM Parameters
+    // SSM Parameters (unchanged)
     new ssm.StringParameter(this, 'RedisEndpoint', {
       parameterName: '/redis/endpoint',
       stringValue: this.redisCluster.attrPrimaryEndPointAddress,
@@ -70,7 +70,7 @@ export class ElasticacheStack extends cdk.Stack {
       stringValue: this.redisCluster.attrPrimaryEndPointPort,
     });
 
-    // Add permissions to App Runner role
+    // App Runner role permissions (unchanged)
     if (props.appRunnerRole) {
       props.appRunnerRole.addToPrincipalPolicy(
         new iam.PolicyStatement({
@@ -80,7 +80,7 @@ export class ElasticacheStack extends cdk.Stack {
       );
     }
 
-    // Outputs
+    // Outputs (unchanged)
     new cdk.CfnOutput(this, 'RedisClusterEndpoint', {
       value: this.redisCluster.attrPrimaryEndPointAddress,
       description: 'Redis Primary Endpoint',
@@ -93,10 +93,9 @@ export class ElasticacheStack extends cdk.Stack {
       exportName: 'RedisPort',
     });
 
-    // Removal Policies
+    // Removal Policies (unchanged)
     this.redisCluster.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     subnetGroup.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     parameterGroup.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
   }
 }
-
