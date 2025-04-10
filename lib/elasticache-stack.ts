@@ -17,6 +17,10 @@ export class ElasticacheStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ElasticacheStackProps) {
     super(scope, id, props);
 
+    // 👇  to fix ClientToken issues
+      synthesizer: new cdk.DefaultStackSynthesizer({
+        generateBootstrapVersionRule: false,
+
     // Security Group (unchanged)
     this.securityGroup = new ec2.SecurityGroup(this, 'RedisSecurityGroup', {
       vpc: props.vpc,
