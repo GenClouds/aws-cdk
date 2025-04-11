@@ -58,27 +58,22 @@ jobs:
           role-session-name: GitHubActions-${{ matrix.environment }}
 
       # =============================================
-      # ONLY MODIFIED SECTION - SAFE BOOTSTRAP FIX
+      # RELIABLE BOOTSTRAP PROCESS
       # =============================================
-      - name: CDK Bootstrap (Safe Retry)
+      - name: CDK Bootstrap (Clean Start)
         run: |
-          # Try normal bootstrap first
-          if cdk bootstrap; then
-            echo "Bootstrap succeeded"
+          # Verify no existing toolkit stack
+          if ! aws cloudformation describe-stacks --stack-name CDKToolkit 2>/dev/null; then
+            echo "No existing CDKToolkit stack found - performing clean bootstrap"
+            cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} \
+              --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+              --force
           else
-            echo "Normal bootstrap failed, attempting cleanup and retry..."
-            # Clean up only if bootstrap failed
-            aws cloudformation delete-stack \
-              --stack-name CDKToolkit \
-              || true
-            aws cloudformation wait stack-delete-complete \
-              --stack-name CDKToolkit \
-              || true
-            # Retry with force
-            cdk bootstrap --force
+            echo "CDKToolkit stack exists - skipping bootstrap"
           fi
+
       # =============================================
-      # EVERYTHING BELOW REMAINS EXACTLY THE SAME
+      # STANDARD DEPLOYMENT (UNCHANGED)
       # =============================================
       - name: CDK Synth
         run: cdk synth -c env=${{ matrix.environment }}
@@ -90,5 +85,5 @@ jobs:
 
       - name: Confirm Deployment Completion
         run: |
-          echo "Successfully deployed all resources to ${{ matrix.environment }} environment in the same AWS account"
-          echo "The Deployment to both dev and prod environments completed successfully"
+          echo "✅ Successfully deployed to ${{ matrix.environment }} environment"
+          echo "🕒 Completed at $(date)"
