@@ -57,24 +57,9 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
           role-session-name: GitHubActions-${{ matrix.environment }}
 
-      # =============================================
-      # RELIABLE BOOTSTRAP PROCESS
-      # =============================================
-      - name: CDK Bootstrap (Clean Start)
-        run: |
-          # Verify no existing toolkit stack
-          if ! aws cloudformation describe-stacks --stack-name CDKToolkit 2>/dev/null; then
-            echo "No existing CDKToolkit stack found - performing clean bootstrap"
-            cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} \
-              --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-              --force
-          else
-            echo "CDKToolkit stack exists - skipping bootstrap"
-          fi
+      - name: CDK Bootstrap
+        run: cdk bootstrap
 
-      # =============================================
-      # STANDARD DEPLOYMENT (UNCHANGED)
-      # =============================================
       - name: CDK Synth
         run: cdk synth -c env=${{ matrix.environment }}
 
@@ -85,5 +70,6 @@ jobs:
 
       - name: Confirm Deployment Completion
         run: |
-          echo "✅ Successfully deployed to ${{ matrix.environment }} environment"
-          echo "🕒 Completed at $(date)"
+          echo "Successfully deployed all resources to ${{ matrix.environment }} environment in the same AWS account"
+          echo "The Deployment to both dev and prod environments completed successfully"
+
