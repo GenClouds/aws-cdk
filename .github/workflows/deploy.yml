@@ -71,4 +71,4 @@ jobs:
       - name: Confirm Deployment Completion
         run: |
           echo "Successfully deployed all resources to ${{ matrix.environment }} environment in the same AWS account"
-          echo "Deployment to both dev and prod environments completed successfully"
+          echo "The Deployment to both dev and prod environments completed successfully"
