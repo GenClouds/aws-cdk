@@ -57,27 +57,14 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
           role-session-name: GitHubActions-${{ matrix.environment }}
 
-      # =============================================
-      # MODIFIED: Force bootstrap with explicit account/region
-      # =============================================
       - name: CDK Bootstrap
-        run: |
-          cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} \
-            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-            --force
+        run: cdk bootstrap
 
       - name: CDK Synth
         run: cdk synth -c env=${{ matrix.environment }}
 
-      # =============================================
-      # MODIFIED: Added --no-previous-parameters flag
-      # =============================================
       - name: CDK Deploy to ${{ matrix.environment }}
-        run: |
-          cdk deploy --all \
-            --require-approval never \
-            --no-previous-parameters \
-            -c env=${{ matrix.environment }}
+        run: cdk deploy --all --require-approval never -c env=${{ matrix.environment }}
         env:
           ENVIRONMENT: ${{ matrix.environment }}
 
