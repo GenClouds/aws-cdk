@@ -17,13 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-
       - name: Install dependencies
         run: npm ci
 
@@ -37,39 +35,33 @@ jobs:
         environment: ['dev', 'prod']
     steps:
       - uses: actions/checkout@v3
-
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-
       - name: Install dependencies
         run: npm ci
-
       - name: Install CDK
         run: npm install -g aws-cdk
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
           role-session-name: GitHubActions-${{ matrix.environment }}
-
       - name: CDK Bootstrap
         run: cdk bootstrap
-
       - name: CDK Synth
         run: cdk synth -c env=${{ matrix.environment }}
-
       - name: CDK Deploy to ${{ matrix.environment }}
-        run: cdk deploy --all --require-approval never -c env=${{ matrix.environment }}
+        run: |
+          # Try normal deploy first
+          cdk deploy --all --require-approval never -c env=${{ matrix.environment }} || \
+          # If that fails, try with fresh changeset
+          cdk deploy --all --require-approval never --no-previous-parameters -c env=${{ matrix.environment }}
         env:
           ENVIRONMENT: ${{ matrix.environment }}
-
       - name: Confirm Deployment Completion
         run: |
-          echo "Successfully deployed all resources to ${{ matrix.environment }} environment in the same AWS account"
-          echo "The Deployment to both dev and prod environments completed successfully"
-
+          echo "Successfully deployed all resources to ${{ matrix.environment }} environment"
