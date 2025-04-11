@@ -57,16 +57,41 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
           role-session-name: GitHubActions-${{ matrix.environment }}
 
-      - name: CDK Bootstrap
-        run: cdk bootstrap
+      # =============================================
+      # REPLACED BOOTSTRAP STEP WITH ENHANCED VERSION
+      # =============================================
+      - name: Clean and Bootstrap Environment
+        run: |
+          # Clean up any existing CDK toolkit stack
+          aws cloudformation delete-stack --stack-name CDKToolkit || true
+          aws cloudformation wait stack-delete-complete --stack-name CDKToolkit || true
+          
+          # Bootstrap with explicit parameters and fresh token
+          export BOOTSTRAP_TOKEN=$(date +%s)
+          cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} \
+            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+            --toolkit-stack-name CDKToolkit-$BOOTSTRAP_TOKEN \
+            --force
 
       - name: CDK Synth
         run: cdk synth -c env=${{ matrix.environment }}
 
+      # =============================================
+      # ENHANCED DEPLOY STEP
+      # =============================================
       - name: CDK Deploy to ${{ matrix.environment }}
-        run: cdk deploy --all --require-approval never -c env=${{ matrix.environment }}
+        run: |
+          export DEPLOY_TOKEN=$(date +%s)
+          cdk deploy --all \
+            --require-approval never \
+            --no-previous-parameters \
+            --ci \
+            --exclusively \
+            -c env=${{ matrix.environment }} \
+            --toolkit-stack-name CDKToolkit-$BOOTSTRAP_TOKEN
         env:
           ENVIRONMENT: ${{ matrix.environment }}
+          AWS_CLOUDFORMATION_CLIENT_TOKEN: $DEPLOY_TOKEN
 
       - name: Confirm Deployment Completion
         run: |
