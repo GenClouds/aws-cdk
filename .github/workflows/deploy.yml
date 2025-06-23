@@ -3,8 +3,18 @@ name: CDK Workflow
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'config/dev/**'
+      - 'config/prod/**'
+      - 'lib/**'
+      - 'bin/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'config/dev/**'
+      - 'config/prod/**'
+      - 'lib/**'
+      - 'bin/**'
 
 permissions:
   id-token: write
@@ -12,6 +22,27 @@ permissions:
   pull-requests: write
 
 jobs:
+  detect-changes:
+    name: Detect Environment Changes
+    runs-on: ubuntu-latest
+    outputs:
+      dev-changed: ${{ steps.changes.outputs.dev }}
+      prod-changed: ${{ steps.changes.outputs.prod }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            dev:
+              - 'config/dev/**'
+              - 'lib/**'
+              - 'bin/**'
+            prod:
+              - 'config/prod/**'
+              - 'lib/**'
+              - 'bin/**'
+
   build-and-test:
     name: Test
     runs-on: ubuntu-latest
@@ -25,14 +56,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-  deploy-environments:
-    name: Deploy to All Environments
+  deploy-dev:
+    name: Deploy to Dev
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build-and-test
-    strategy:
-      matrix:
-        environment: ['dev', 'prod']
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.dev-changed == 'true'
+    needs: [build-and-test, detect-changes]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Node.js
@@ -49,19 +77,51 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GitHubActions-${{ matrix.environment }}
+          role-session-name: GitHubActions-dev
       - name: CDK Bootstrap
         run: cdk bootstrap
       - name: CDK Synth
-        run: cdk synth -c env=${{ matrix.environment }}
-      - name: CDK Deploy to ${{ matrix.environment }}
+        run: cdk synth -c env=dev
+      - name: CDK Deploy to Dev
         run: |
-          # Try normal deploy first
-          cdk deploy --all --require-approval never -c env=${{ matrix.environment }} || \
-          # If that fails, try with fresh changeset
-          cdk deploy --all --require-approval never --no-previous-parameters -c env=${{ matrix.environment }}
+          cdk deploy --all --require-approval never -c env=dev || \
+          cdk deploy --all --require-approval never --no-previous-parameters -c env=dev
         env:
-          ENVIRONMENT: ${{ matrix.environment }}
+          ENVIRONMENT: dev
       - name: Confirm Deployment Completion
+        run: echo "Successfully deployed to dev environment"
+
+  deploy-prod:
+    name: Deploy to Prod
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.prod-changed == 'true'
+    needs: [build-and-test, detect-changes]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install CDK
+        run: npm install -g aws-cdk
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-prod
+      - name: CDK Bootstrap
+        run: cdk bootstrap
+      - name: CDK Synth
+        run: cdk synth -c env=prod
+      - name: CDK Deploy to Prod
         run: |
-          echo "Successfully deployed all resources to ${{ matrix.environment }} environment"
+          cdk deploy --all --require-approval never -c env=prod || \
+          cdk deploy --all --require-approval never --no-previous-parameters -c env=prod
+        env:
+          ENVIRONMENT: prod
+      - name: Confirm Deployment Completion
+        run: echo "Successfully deployed to prod environment"
