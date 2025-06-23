@@ -4,17 +4,13 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'config/dev/**'
-      - 'config/prod/**'
-      - 'lib/**'
-      - 'bin/**'
+      - 'environments/dev/**'
+      - 'environments/prod/**'
   pull_request:
     branches: [ main ]
     paths:
-      - 'config/dev/**'
-      - 'config/prod/**'
-      - 'lib/**'
-      - 'bin/**'
+      - 'environments/dev/**'
+      - 'environments/prod/**'
 
 permissions:
   id-token: write
@@ -35,13 +31,9 @@ jobs:
         with:
           filters: |
             dev:
-              - 'config/dev/**'
-              - 'lib/**'
-              - 'bin/**'
+              - 'environments/dev/**'
             prod:
-              - 'config/prod/**'
-              - 'lib/**'
-              - 'bin/**'
+              - 'environments/prod/**'
 
   build-and-test:
     name: Test
@@ -81,11 +73,11 @@ jobs:
       - name: CDK Bootstrap
         run: cdk bootstrap
       - name: CDK Synth
-        run: cdk synth -c env=dev
+        run: cdk synth -c env=dev --app "npx ts-node --prefer-ts-exts environments/dev/bin/aws-cdk.ts"
       - name: CDK Deploy to Dev
         run: |
-          cdk deploy --all --require-approval never -c env=dev || \
-          cdk deploy --all --require-approval never --no-previous-parameters -c env=dev
+          cdk deploy --all --require-approval never -c env=dev --app "npx ts-node --prefer-ts-exts environments/dev/bin/aws-cdk.ts" || \
+          cdk deploy --all --require-approval never --no-previous-parameters -c env=dev --app "npx ts-node --prefer-ts-exts environments/dev/bin/aws-cdk.ts"
         env:
           ENVIRONMENT: dev
       - name: Confirm Deployment Completion
@@ -116,11 +108,11 @@ jobs:
       - name: CDK Bootstrap
         run: cdk bootstrap
       - name: CDK Synth
-        run: cdk synth -c env=prod
+        run: cdk synth -c env=prod --app "npx ts-node --prefer-ts-exts environments/prod/bin/aws-cdk.ts"
       - name: CDK Deploy to Prod
         run: |
-          cdk deploy --all --require-approval never -c env=prod || \
-          cdk deploy --all --require-approval never --no-previous-parameters -c env=prod
+          cdk deploy --all --require-approval never -c env=prod --app "npx ts-node --prefer-ts-exts environments/prod/bin/aws-cdk.ts" || \
+          cdk deploy --all --require-approval never --no-previous-parameters -c env=prod --app "npx ts-node --prefer-ts-exts environments/prod/bin/aws-cdk.ts"
         env:
           ENVIRONMENT: prod
       - name: Confirm Deployment Completion
