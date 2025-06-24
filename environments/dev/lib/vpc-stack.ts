@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
-// Test dev deployment trigger
+// Test dev deployment trigger //
 export class VpcStack extends cdk.Stack {
   public readonly vpc: ec2.Vpc;
 
