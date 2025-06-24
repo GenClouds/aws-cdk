@@ -9,7 +9,7 @@ import { ElasticacheStack } from '../lib/elasticache-stack';
 
 const app = new cdk.App();
 
-// Existing stacks
+// Existing stacks //
 const vpcStack = new VpcStack(app, 'VpcStack');
 const databaseStack = new DatabaseStack(app, 'DatabaseStack', { vpc: vpcStack.vpc });
 const ecrStack = new EcrStack(app, 'EcrStack');
