@@ -1,10 +1,10 @@
-name: CDK Production Workflow
+name: CDK Development Workflow
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ dev ]
 
 permissions:
   id-token: write
@@ -25,10 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-  deploy-prod:
-    name: Deploy to Production
+  deploy-dev:
+    name: Deploy to Development
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     needs: build-and-test
     steps:
       - uses: actions/checkout@v3
@@ -46,16 +46,17 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GitHubActions-prod
+          role-session-name: GitHubActions-dev
       - name: CDK Bootstrap
         run: cdk bootstrap
       - name: CDK Synth
-        run: cdk synth -c env=prod
-      - name: CDK Deploy to prod
+        run: cdk synth -c env=dev
+      - name: CDK Deploy to dev
         run: |
-          cdk deploy --all --require-approval never -c env=prod || \
-          cdk deploy --all --require-approval never --no-previous-parameters -c env=prod
+          cdk deploy --all --require-approval never -c env=dev || \
+          cdk deploy --all --require-approval never --no-previous-parameters -c env=dev
         env:
-          ENVIRONMENT: prod
+          ENVIRONMENT: dev
       - name: Confirm Deployment Completion
-        run: echo "Successfully deployed all resources to prod"
+        run: echo "Successfully deployed all resources to dev"
+
