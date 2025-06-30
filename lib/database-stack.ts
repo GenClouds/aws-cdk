@@ -36,19 +36,19 @@ export class DatabaseStack extends cdk.Stack {
 
     // Store database credentials in SSM Parameter Store
     new ssm.StringParameter(this, 'DBEndpoint', {
-      parameterName: '/database/endpoint',
+      parameterName: '/database-dev/endpoint',
       stringValue: cluster.clusterEndpoint.hostname,
     });
 
     new ssm.StringParameter(this, 'DBPort', {
-      parameterName: '/database/port',
+      parameterName: '/database-dev/port',
       stringValue: cluster.clusterEndpoint.port.toString(),
     });
 
     const secretArn = cluster.secret?.secretArn;
     if (secretArn) {
       new ssm.StringParameter(this, 'DBSecretArn', {
-        parameterName: '/database/secret-arn',
+        parameterName: '/database-dev/secret-arn',
         stringValue: secretArn,
       });
     }
