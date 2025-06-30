@@ -9,18 +9,24 @@ import { ElasticacheStack } from '../lib/elasticache-stack';
 
 const app = new cdk.App();
 
-// Dev stacks
-const vpcStack = new VpcStack(app, 'VpcStack-dev');
-const ecrStack = new EcrStack(app, 'EcrStack-dev');
+// Dev stacks with tags
+const vpcStack = new VpcStack(app, 'VpcStack-dev', {
+  tags: { Environment: 'dev', Project: 'microservices-deployment' }
+});
+const ecrStack = new EcrStack(app, 'EcrStack-dev', {
+  tags: { Environment: 'dev', Project: 'microservices-deployment' }
+});
 const appRunnerStack = new AppRunnerStack(app, 'AppRunnerStack-dev', {
   nodejsRepo: ecrStack.nodejsRepo,
   fastapiRepo: ecrStack.fastapiRepo,
+  tags: { Environment: 'dev', Project: 'microservices-deployment' }
 });
 
 // Add ElastiCache stack
 new ElasticacheStack(app, 'ElasticacheStack-dev', {
   vpc: vpcStack.vpc,
   appRunnerRole: appRunnerStack.instanceRole,
+  tags: { Environment: 'dev', Project: 'microservices-deployment' }
 });
 
 // Add dependencies
