@@ -10,15 +10,15 @@ export class EcrStack extends cdk.Stack {
     super(scope, id, props);
 
     this.nodejsRepo = new ecr.Repository(this, 'NodejsRepo', {
-      repositoryName: 'nodejs-app',
+      repositoryName: 'nodejs-app-dev',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteImages: true,
+      emptyOnDelete: true,
     });
 
     this.fastapiRepo = new ecr.Repository(this, 'FastAPIRepo', {
-      repositoryName: 'fastapi-app',
+      repositoryName: 'fastapi-app-dev',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteImages: true,
+      emptyOnDelete: true,
     });
   }
 }
