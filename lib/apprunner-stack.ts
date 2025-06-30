@@ -30,7 +30,8 @@ export class AppRunnerStack extends cdk.Stack {
     );
 
     // Create Node.js App Runner Service
-    new apprunner.Service(this, 'NodejsAppRunner', {
+    const nodejsService = new apprunner.Service(this, 'NodejsAppRunner', {
+      serviceName: 'nodejs-service-dev',
       source: apprunner.Source.fromEcr({
         imageConfiguration: {
           port: 3000,
@@ -38,11 +39,12 @@ export class AppRunnerStack extends cdk.Stack {
         repository: props.nodejsRepo,
         tagOrDigest: 'latest',
       }),
-      instanceRole: this.instanceRole,  // Use the class property
+      instanceRole: this.instanceRole,
     });
 
     // Create FastAPI App Runner Service
-    new apprunner.Service(this, 'FastAPIAppRunner', {
+    const fastapiService = new apprunner.Service(this, 'FastAPIAppRunner', {
+      serviceName: 'fastapi-service-dev',
       source: apprunner.Source.fromEcr({
         imageConfiguration: {
           port: 8000,
@@ -50,7 +52,13 @@ export class AppRunnerStack extends cdk.Stack {
         repository: props.fastapiRepo,
         tagOrDigest: 'latest',
       }),
-      instanceRole: this.instanceRole,  // Use the class property
+      instanceRole: this.instanceRole,
     });
+
+    // Add tags to AppRunner services
+    cdk.Tags.of(nodejsService).add('Environment', 'dev');
+    cdk.Tags.of(nodejsService).add('Service', 'nodejs');
+    cdk.Tags.of(fastapiService).add('Environment', 'dev');
+    cdk.Tags.of(fastapiService).add('Service', 'fastapi');
   }
 }
