@@ -17,12 +17,12 @@ export class ElasticacheStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ElasticacheStackProps) {
     super(scope, id, props);
 
-    // Security Group (unchanged)
+    // Security Group
     this.securityGroup = new ec2.SecurityGroup(this, 'RedisSecurityGroup', {
       vpc: props.vpc,
-      description: 'Security group for Redis cluster',
+      description: 'Security group for Redis cluster dev',
       allowAllOutbound: true,
-      securityGroupName: 'redis-security-group',
+      securityGroupName: 'redis-security-group-dev',
     });
 
     // Subnet Group (unchanged)
@@ -59,14 +59,14 @@ export class ElasticacheStack extends cdk.Stack {
       cacheParameterGroupName: parameterGroup.ref,
     });
 
-    // SSM Parameters (unchanged)
+    // SSM Parameters
     new ssm.StringParameter(this, 'RedisEndpoint', {
-      parameterName: '/redis/endpoint',
+      parameterName: '/redis-dev/endpoint',
       stringValue: this.redisCluster.attrPrimaryEndPointAddress,
     });
 
     new ssm.StringParameter(this, 'RedisPort', {
-      parameterName: '/redis/port',
+      parameterName: '/redis-dev/port',
       stringValue: this.redisCluster.attrPrimaryEndPointPort,
     });
 
@@ -75,7 +75,7 @@ export class ElasticacheStack extends cdk.Stack {
       props.appRunnerRole.addToPrincipalPolicy(
         new iam.PolicyStatement({
           actions: ['ssm:GetParameter', 'ssm:GetParameters'],
-          resources: ['arn:aws:ssm:*:*:parameter/redis/*'],
+          resources: ['arn:aws:ssm:*:*:parameter/redis-dev/*'],
         })
       );
     }
@@ -84,13 +84,13 @@ export class ElasticacheStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'RedisClusterEndpoint', {
       value: this.redisCluster.attrPrimaryEndPointAddress,
       description: 'Redis Primary Endpoint',
-      exportName: 'RedisEndpoint',
+      exportName: 'RedisEndpoint-dev',
     });
 
     new cdk.CfnOutput(this, 'RedisClusterPort', {
       value: this.redisCluster.attrPrimaryEndPointPort,
       description: 'Redis Port',
-      exportName: 'RedisPort',
+      exportName: 'RedisPort-dev',
     });
 
     // Removal Policies (unchanged)

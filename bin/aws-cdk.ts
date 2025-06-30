@@ -9,9 +9,8 @@ import { ElasticacheStack } from '../lib/elasticache-stack';
 
 const app = new cdk.App();
 
-// Existing stacks
+// Dev stacks
 const vpcStack = new VpcStack(app, 'VpcStack-dev');
-const databaseStack = new DatabaseStack(app, 'DatabaseStack-dev', { vpc: vpcStack.vpc });
 const ecrStack = new EcrStack(app, 'EcrStack-dev');
 const appRunnerStack = new AppRunnerStack(app, 'AppRunnerStack-dev', {
   nodejsRepo: ecrStack.nodejsRepo,
@@ -25,6 +24,5 @@ new ElasticacheStack(app, 'ElasticacheStack-dev', {
 });
 
 // Add dependencies
-databaseStack.addDependency(vpcStack);
 appRunnerStack.addDependency(ecrStack);
 
