@@ -9,6 +9,7 @@ export class VpcStack extends cdk.Stack {
     super(scope, id, props);
 
     this.vpc = new ec2.Vpc(this, 'VPC', {
+      vpcName: 'VpcStack-Dev',
       maxAzs: 2,
       subnetConfiguration: [
         {
