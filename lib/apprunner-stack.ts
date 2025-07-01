@@ -55,7 +55,7 @@ export class AppRunnerStack extends cdk.Stack {
       instanceRole: this.instanceRole,
     });
 
-    // Add tags to AppRunner services
+    // Adding tags to AppRunner services
     cdk.Tags.of(nodejsService).add('Environment', 'dev');
     cdk.Tags.of(nodejsService).add('Service', 'nodejs');
     cdk.Tags.of(fastapiService).add('Environment', 'dev');
