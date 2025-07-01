@@ -8,7 +8,7 @@ export class VpcStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    this.vpc = new ec2.Vpc(this, 'VPC', {
+    this.vpc = new ec2.Vpc(this, 'VpcStack-Dev', {
       vpcName: 'VpcStack-Dev',
       maxAzs: 2,
       natGateways: 1,
@@ -30,5 +30,12 @@ export class VpcStack extends cdk.Stack {
         },
       ],
     });
+
+    // Override route table names
+    const privateRouteTable = this.vpc.privateSubnets[0].routeTable;
+    cdk.Tags.of(privateRouteTable).add('Name', 'VpcStack-Dev/Rt/PrivateSubnet1');
+    
+    const isolatedRouteTable = this.vpc.isolatedSubnets[0].routeTable;
+    cdk.Tags.of(isolatedRouteTable).add('Name', 'VpcStack-Dev/Rt/IsolatedSubnet1');
   }
 }

@@ -21,7 +21,7 @@ export class AppRunnerStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('tasks.apprunner.amazonaws.com'),
     });
 
-    // Add permissions to access SSM parameters
+    // Adding permissions to access SSM parameters
     this.instanceRole.addToPolicy(
       new iam.PolicyStatement({
         actions: ['ssm:GetParameter', 'ssm:GetParameters'],
