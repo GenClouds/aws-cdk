@@ -22,9 +22,9 @@ const vpcStack = new VpcStack(app, `VpcStack${stackSuffix}`, {
   }
 });
 
-// Only create database stack for production (main branch)
+// Create database stack only for develop branch
 let databaseStack: DatabaseStack | undefined;
-if (branch === 'main') {
+if (branch === 'develop') {
   databaseStack = new DatabaseStack(app, `DatabaseStack${stackSuffix}`, { 
     vpc: vpcStack.vpc,
     tags: {
