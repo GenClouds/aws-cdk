@@ -22,7 +22,7 @@ const vpcStack = new VpcStack(app, `VpcStack${stackSuffix}`, {
   }
 });
 
-// Create database stack for both main and develop branches
+// Create the database stack for both main and develop branches
 let databaseStack: DatabaseStack | undefined;
 if (branch === 'main') {
   databaseStack = new DatabaseStack(app, `DatabaseStack${stackSuffix}`, { 
