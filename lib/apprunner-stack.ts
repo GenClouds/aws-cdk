@@ -130,20 +130,28 @@ export class AppRunnerStack extends cdk.Stack {
     this.nodejsServiceName = nodejsService.serviceName;
     this.fastapiServiceName = fastapiService.serviceName;
 
-    // Add custom domains for dev environment
-    if (environment === 'dev') {
+    // Add custom domains for dev environment using CloudFormation
+    if (environment === 'develop') {
       // Custom domain for Node.js service
-      new apprunner.CustomDomainAssociation(this, 'NodejsCustomDomain', {
-        service: nodejsService,
-        domainName: 'dev-nodeapi.carecapture.ai'
+      new cdk.CfnResource(this, 'NodejsCustomDomain', {
+        type: 'AWS::AppRunner::CustomDomainAssociation',
+        properties: {
+          ServiceArn: nodejsService.serviceArn,
+          DomainName: 'dev-nodeapi.carecapture.ai'
+        }
       });
 
       // Custom domain for FastAPI service
-      new apprunner.CustomDomainAssociation(this, 'FastAPICustomDomain', {
-        service: fastapiService,
-        domainName: 'dev-genai.carecapture.ai'
+      new cdk.CfnResource(this, 'FastAPICustomDomain', {
+        type: 'AWS::AppRunner::CustomDomainAssociation',
+        properties: {
+          ServiceArn: fastapiService.serviceArn,
+          DomainName: 'dev-genai.carecapture.ai'
+        }
       });
     }
+
+
 
     // Add outputs
     new cdk.CfnOutput(this, 'NodejsServiceName', {
@@ -178,7 +186,7 @@ export class AppRunnerStack extends cdk.Stack {
     });
 
     // Add custom domain outputs for dev environment
-    if (environment === 'dev') {
+    if (environment === 'develop') {
       new cdk.CfnOutput(this, 'NodejsCustomDomainUrl', {
         value: 'https://dev-nodeapi.carecapture.ai',
         description: 'Custom domain URL for Node.js service',
@@ -191,5 +199,7 @@ export class AppRunnerStack extends cdk.Stack {
         exportName: `FastAPICustomDomainUrl${stackSuffix}`,
       });
     }
+
+
   }
 }
