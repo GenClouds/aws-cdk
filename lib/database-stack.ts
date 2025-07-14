@@ -54,7 +54,7 @@ export class DatabaseStack extends cdk.Stack {
       publiclyAccessible: true, // Enable public accessibility for direct access
       storageType: rds.StorageType.GP2,
       securityGroups: [dbSecurityGroup],
-      instanceIdentifier: environment === 'dev' ? 'dev-db-carecapture-ai' : 'databasestack',
+      instanceIdentifier: environment === 'dev' ? 'dev-db.carecapture.ai' : 'databasestack',
       // removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
