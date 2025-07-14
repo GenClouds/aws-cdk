@@ -120,7 +120,7 @@ export class AppRunnerStack extends cdk.Stack {
           }
         },
         repository: props.fastapiRepo,
-        tagOrDigest: 'a424f33792e86f2b5b6293d72f06668d85bc0767',
+        tagOrDigest: 'latest',
       }),
       instanceRole,
       vpcConnector
@@ -131,7 +131,7 @@ export class AppRunnerStack extends cdk.Stack {
     this.fastapiServiceName = fastapiService.serviceName;
 
     // Add custom domains for dev environment using CloudFormation
-    if (environment === 'develop') {
+    if (environment === 'dev') {
       // Custom domain for Node.js service
       new cdk.CfnResource(this, 'NodejsCustomDomain', {
         type: 'AWS::AppRunner::CustomDomainAssociation',
@@ -186,7 +186,7 @@ export class AppRunnerStack extends cdk.Stack {
     });
 
     // Add custom domain outputs for dev environment
-    if (environment === 'develop') {
+    if (environment === 'dev') {
       new cdk.CfnOutput(this, 'NodejsCustomDomainUrl', {
         value: 'https://dev-nodeapi.carecapture.ai',
         description: 'Custom domain URL for Node.js service',
