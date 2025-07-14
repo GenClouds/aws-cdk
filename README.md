@@ -103,7 +103,7 @@ For GitHub Actions to deploy to AWS securely, you need to set up an OpenID Conne
 Add the following secrets to your GitHub repository:
 
 - `AWS_ROLE_ARN`: The ARN of the IAM role created above 
-- `AWS_REGION`: The AWS region to deploy to (e.g., `us-east-1`)
+- `AWS_REGION`: The AWS region to deploy to (e.g., `us-east-2`)
 
 ## Local Development and Deployment
 
@@ -121,6 +121,12 @@ Add the following secrets to your GitHub repository:
    ```bash
    cdk deploy --all
    ```
+
+4. Destroy the stacks: 
+   ```bash
+   cdk destroy --all
+   ```
+   - make sure you run the first two.
 
 ## CI/CD Workflow
 
@@ -206,3 +212,11 @@ jobs:
 - If GitHub Actions deployment fails with permission errors, check the AWS role ARN and trust relationship configuration
 - For ECR access issues, verify the ECR repository policy includes the correct permissions for App Runner
 - Make sure all required GitHub secrets are correctly set up in your repository settings
+- In case first time running the cdk or after the destroy - all 
+  - 1. app-runner - will throw error, issue is because of ECR not having the image for the apis 
+	- 2. Run the test for the apis repo 
+	3. Re-run the cdk 
+	4. Check the image name - hash update 
+	5. App runner service name - inside the APIs repo 
+		1. Grab it from AWS 
+		2. 

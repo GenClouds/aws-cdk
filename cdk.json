@@ -42,13 +42,20 @@
       "@aws-cdk/aws-route53-patters:useCertificate": true,
       "@aws-cdk/customresources:installLatestAwsSdkDefault": false,
       "vpc-name": "AppVpc",
-      "nodejs-repo-name": "nodejs-service",
-      "fastapi-repo-name": "fastapi-service",
+      "nodejs-repo-name": "nodejs-app",
+      "fastapi-repo-name": "fastapi-app",
       "database-name": "appdb",
       "nodejs-app-port": 3000,
       "fastapi-app-port": 8000,
       "tags": {
-        "project": "microservices-deployment",
+        "project": "microservices-deployment"
+      },
+      "dev": {
+        "vpc-cidr": "10.1.0.0/16",
+        "environment": "development"
+      },
+      "prod": {
+        "vpc-cidr": "10.0.0.0/16",
         "environment": "production"
       }
     }
