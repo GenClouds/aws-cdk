@@ -6,46 +6,73 @@ import { Construct } from 'constructs';
 
 interface DatabaseStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
+  directAccessIp?: string;
 }
 
 export class DatabaseStack extends cdk.Stack {
+  public readonly dbEndpoint: string;
+  public readonly dbPort: string;
+  public readonly dbSecurityGroup: ec2.SecurityGroup;
+
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
     super(scope, id, props);
 
     const instanceType = ec2.InstanceType.of(
       ec2.InstanceClass.T3,
-      ec2.InstanceSize.MEDIUM
+      ec2.InstanceSize.MICRO
     );
 
-    const cluster = new rds.DatabaseCluster(this, 'Database', {
-      engine: rds.DatabaseClusterEngine.auroraPostgres({
-        version: rds.AuroraPostgresEngineVersion.VER_15_3,
+    // Create a security group for the database
+    const dbSecurityGroup = new ec2.SecurityGroup(this, 'DatabaseSecurityGroup', {
+      vpc: props.vpc,
+      description: 'Security group for RDS instance',
+      allowAllOutbound: true,
+    });
+
+    // Add inbound rule for PostgreSQL (port 5432) from VPC CIDR
+    dbSecurityGroup.addIngressRule(
+      ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
+      ec2.Port.tcp(5432),
+      'Allow PostgreSQL access from within VPC'
+    );
+
+    const instance = new rds.DatabaseInstance(this, 'Database', {
+      engine: rds.DatabaseInstanceEngine.postgres({
+        version: rds.PostgresEngineVersion.VER_15
       }),
-      credentials: rds.Credentials.fromGeneratedSecret('clusteradmin'),
+      instanceType: instanceType,
       vpc: props.vpc,
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        subnetType: ec2.SubnetType.PUBLIC,
       },
-      writer: rds.ClusterInstance.serverlessV2('Writer'),
-      readers: [
-        rds.ClusterInstance.serverlessV2('Reader1'),
-      ],
-      serverlessV2MinCapacity: 0.5,
-      serverlessV2MaxCapacity: 1,
+      allocatedStorage: 25,
+      maxAllocatedStorage: 25,
+      credentials: rds.Credentials.fromGeneratedSecret('postgresadmin'),
+      multiAz: false,
+      publiclyAccessible: true, // Enable public accessibility for direct access
+      storageType: rds.StorageType.GP2,
+      securityGroups: [dbSecurityGroup],
+      instanceIdentifier: 'databasestack',
+      // removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
+
+    // Store the endpoint and port for other stacks to use
+    this.dbEndpoint = instance.instanceEndpoint.hostname;
+    this.dbPort = instance.instanceEndpoint.port.toString();
+    this.dbSecurityGroup = dbSecurityGroup;
 
     // Store database credentials in SSM Parameter Store
     new ssm.StringParameter(this, 'DBEndpoint', {
       parameterName: '/database/endpoint',
-      stringValue: cluster.clusterEndpoint.hostname,
+      stringValue: this.dbEndpoint,
     });
 
     new ssm.StringParameter(this, 'DBPort', {
       parameterName: '/database/port',
-      stringValue: cluster.clusterEndpoint.port.toString(),
+      stringValue: this.dbPort,
     });
 
-    const secretArn = cluster.secret?.secretArn;
+    const secretArn = instance.secret?.secretArn;
     if (secretArn) {
       new ssm.StringParameter(this, 'DBSecretArn', {
         parameterName: '/database/secret-arn',

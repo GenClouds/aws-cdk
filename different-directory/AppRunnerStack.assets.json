@@ -1,0 +1,20 @@
+{
+  "version": "41.0.0",
+  "files": {
+    "15bd3b4ec1449ce48eef49308c2db152b196538eb906c4814009b3eeda55de44": {
+      "displayName": "AppRunnerStack Template",
+      "source": {
+        "path": "AppRunnerStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "15bd3b4ec1449ce48eef49308c2db152b196538eb906c4814009b3eeda55de44.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

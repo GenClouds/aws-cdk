@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as custom_resources from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 
 export class VpcStack extends cdk.Stack {
@@ -10,6 +11,7 @@ export class VpcStack extends cdk.Stack {
 
     this.vpc = new ec2.Vpc(this, 'MainVPC', {
       maxAzs: 2,
+      natGateways: 1,
       subnetConfiguration: [
         {
           cidrMask: 24,
@@ -20,11 +22,6 @@ export class VpcStack extends cdk.Stack {
           cidrMask: 24,
           name: 'Private',
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-        },
-        {
-          cidrMask: 24,
-          name: 'Isolated',
-          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
         },
       ],
     });

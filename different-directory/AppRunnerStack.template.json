@@ -1,0 +1,631 @@
+{
+ "Resources": {
+  "AppRunnerInstanceRole96A5A063": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "tasks.apprunner.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/AppRunnerInstanceRole/Resource"
+   }
+  },
+  "AppRunnerInstanceRoleDefaultPolicy35195718": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ssm:GetParameter",
+        "ssm:GetParameters"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:ssm:*:*:parameter/database/*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AppRunnerInstanceRoleDefaultPolicy35195718",
+    "Roles": [
+     {
+      "Ref": "AppRunnerInstanceRole96A5A063"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/AppRunnerInstanceRole/DefaultPolicy/Resource"
+   }
+  },
+  "NodejsAppRunnerAccessRole39ED6065": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "build.apprunner.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/NodejsAppRunner/AccessRole/Resource"
+   }
+  },
+  "NodejsAppRunnerAccessRoleDefaultPolicy74ED2A50": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttNodejsRepo367784D4Arn10A76134"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "NodejsAppRunnerAccessRoleDefaultPolicy74ED2A50",
+    "Roles": [
+     {
+      "Ref": "NodejsAppRunnerAccessRole39ED6065"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/NodejsAppRunner/AccessRole/DefaultPolicy/Resource"
+   }
+  },
+  "NodejsAppRunner3A4269C4": {
+   "Type": "AWS::AppRunner::Service",
+   "Properties": {
+    "InstanceConfiguration": {
+     "InstanceRoleArn": {
+      "Fn::GetAtt": [
+       "AppRunnerInstanceRole96A5A063",
+       "Arn"
+      ]
+     }
+    },
+    "NetworkConfiguration": {
+     "EgressConfiguration": {
+      "EgressType": "DEFAULT"
+     }
+    },
+    "SourceConfiguration": {
+     "AuthenticationConfiguration": {
+      "AccessRoleArn": {
+       "Fn::GetAtt": [
+        "NodejsAppRunnerAccessRole39ED6065",
+        "Arn"
+       ]
+      }
+     },
+     "ImageRepository": {
+      "ImageConfiguration": {
+       "Port": "3000"
+      },
+      "ImageIdentifier": {
+       "Fn::Join": [
+        "",
+        [
+         {
+          "Fn::Select": [
+           4,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttNodejsRepo367784D4Arn10A76134"
+             }
+            ]
+           }
+          ]
+         },
+         ".dkr.ecr.",
+         {
+          "Fn::Select": [
+           3,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttNodejsRepo367784D4Arn10A76134"
+             }
+            ]
+           }
+          ]
+         },
+         ".",
+         {
+          "Ref": "AWS::URLSuffix"
+         },
+         "/",
+         {
+          "Fn::ImportValue": "EcrStack:ExportsOutputRefNodejsRepo367784D42EE7910E"
+         },
+         ":5d97a2f04165496e2cb30656e2e552668fdd59c6"
+        ]
+       ]
+      },
+      "ImageRepositoryType": "ECR"
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/NodejsAppRunner/Resource"
+   }
+  },
+  "FastAPIAppRunnerAccessRole9AE9D9BE": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "build.apprunner.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/FastAPIAppRunner/AccessRole/Resource"
+   }
+  },
+  "FastAPIAppRunnerAccessRoleDefaultPolicy46CFF5CE": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttFastAPIRepo7252E497ArnDA3D766A"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "FastAPIAppRunnerAccessRoleDefaultPolicy46CFF5CE",
+    "Roles": [
+     {
+      "Ref": "FastAPIAppRunnerAccessRole9AE9D9BE"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/FastAPIAppRunner/AccessRole/DefaultPolicy/Resource"
+   }
+  },
+  "FastAPIAppRunner6751B534": {
+   "Type": "AWS::AppRunner::Service",
+   "Properties": {
+    "InstanceConfiguration": {
+     "InstanceRoleArn": {
+      "Fn::GetAtt": [
+       "AppRunnerInstanceRole96A5A063",
+       "Arn"
+      ]
+     }
+    },
+    "NetworkConfiguration": {
+     "EgressConfiguration": {
+      "EgressType": "DEFAULT"
+     }
+    },
+    "SourceConfiguration": {
+     "AuthenticationConfiguration": {
+      "AccessRoleArn": {
+       "Fn::GetAtt": [
+        "FastAPIAppRunnerAccessRole9AE9D9BE",
+        "Arn"
+       ]
+      }
+     },
+     "ImageRepository": {
+      "ImageConfiguration": {
+       "Port": "8000"
+      },
+      "ImageIdentifier": {
+       "Fn::Join": [
+        "",
+        [
+         {
+          "Fn::Select": [
+           4,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttFastAPIRepo7252E497ArnDA3D766A"
+             }
+            ]
+           }
+          ]
+         },
+         ".dkr.ecr.",
+         {
+          "Fn::Select": [
+           3,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttFastAPIRepo7252E497ArnDA3D766A"
+             }
+            ]
+           }
+          ]
+         },
+         ".",
+         {
+          "Ref": "AWS::URLSuffix"
+         },
+         "/",
+         {
+          "Fn::ImportValue": "EcrStack:ExportsOutputRefFastAPIRepo7252E4979ECBCAB9"
+         },
+         ":a424f33792e86f2b5b6293d72f06668d85bc0767"
+        ]
+       ]
+      },
+      "ImageRepositoryType": "ECR"
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/FastAPIAppRunner/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/z2NUQ6CMBBEz+J/u1g00U8TL2DKAUgta1wobdMCxjTc3SKErzc7s5MpIYnrBY4H9YlcNx039IRUDUp3LFt1ItVDks4gu7/snw9nSH+Xc1UzU96H0VoMkM0Kw0QaZyYxujEsSogzCK6Mf6u8dNumioV7dYv3tnUNQhuLqTyBELnWRiKefwfqEeTKH50ThzK+AAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "AppRunnerStack/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

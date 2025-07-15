@@ -1,0 +1,34 @@
+{
+  "version": "41.0.0",
+  "files": {
+    "35a53bc183aaf4d7fe84d5e5ed06d48f33ef294fa1325c16cf5db800fa6ee72d": {
+      "displayName": "EcrStack/Custom::ECRAutoDeleteImagesCustomResourceProvider Code",
+      "source": {
+        "path": "asset.35a53bc183aaf4d7fe84d5e5ed06d48f33ef294fa1325c16cf5db800fa6ee72d",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "35a53bc183aaf4d7fe84d5e5ed06d48f33ef294fa1325c16cf5db800fa6ee72d.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "49f9445826acda8a7d33d618f0ffaa10603222311540b38625614fadad512788": {
+      "displayName": "EcrStack Template",
+      "source": {
+        "path": "EcrStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "49f9445826acda8a7d33d618f0ffaa10603222311540b38625614fadad512788.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
