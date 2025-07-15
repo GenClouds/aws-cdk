@@ -1,4 +1,4 @@
-# AWS CDK Infrastructure
+## AWS CDK Infrastructure
 
 This repository contains the AWS CDK infrastructure code for deploying Node.js and FastAPI applications using AWS CDK with GitHub Actions CI/CD.
 
