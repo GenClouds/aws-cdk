@@ -73,7 +73,8 @@ export class CacheStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CacheEndpoint', {
       value: this.cacheEndpoint,
       description: 'Redis endpoint address',
-      exportName: `${this.stackName-dev}-endpoint`,
+      // exportName: `${this.stackName}-endpoint`,
+      exportName: `CacheStackDev-endpoint`,
     });
 
     new cdk.CfnOutput(this, 'CachePort', {
