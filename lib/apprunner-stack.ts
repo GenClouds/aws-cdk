@@ -116,7 +116,7 @@ export class AppRunnerStack extends cdk.Stack {
           }
         },
         repository: props.fastapiRepo,
-        tagOrDigest: 'a424f33792e86f2b5b6293d72f06668d85bc0767',
+        tagOrDigest: 'latest',
       }),
       instanceRole,
       vpcConnector
