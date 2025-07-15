@@ -9,7 +9,7 @@ This repository contains the AWS CDK infrastructure code for deploying Node.js a
 - Docker installed (for local development)
 - Proper AWS OIDC connection configured in your AWS account (see setup below)
 
-## Infrastructure Components
+## Infrastructure Components :
 
 - VPC with public, private, and isolated subnets
 - Aurora PostgreSQL database
