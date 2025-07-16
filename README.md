@@ -1,4 +1,4 @@
-## AWS CDK Infrastructure
+# AWS CDK Infrastructure
 
 This repository contains the AWS CDK infrastructure code for deploying Node.js and FastAPI applications using AWS CDK with GitHub Actions CI/CD.
 
@@ -9,7 +9,7 @@ This repository contains the AWS CDK infrastructure code for deploying Node.js a
 - Docker installed (for local development)
 - Proper AWS OIDC connection configured in your AWS account (see setup below)
 
-## Infrastructure Components
+## Infrastructure Components :
 
 - VPC with public, private, and isolated subnets
 - Aurora PostgreSQL database
@@ -207,7 +207,7 @@ jobs:
         run: cdk deploy --all --require-approval never
 ```
 
-## Troubleshooting
+## Troubleshooting <<<<<
 
 - If GitHub Actions deployment fails with permission errors, check the AWS role ARN and trust relationship configuration
 - For ECR access issues, verify the ECR repository policy includes the correct permissions for App Runner

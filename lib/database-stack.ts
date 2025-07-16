@@ -17,6 +17,8 @@ export class DatabaseStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
     super(scope, id, props);
 
+    const environment = this.node.tryGetContext('environment') || 'prod';
+
     const instanceType = ec2.InstanceType.of(
       ec2.InstanceClass.T3,
       ec2.InstanceSize.MICRO
@@ -52,7 +54,7 @@ export class DatabaseStack extends cdk.Stack {
       publiclyAccessible: true, // Enable public accessibility for direct access
       storageType: rds.StorageType.GP2,
       securityGroups: [dbSecurityGroup],
-      instanceIdentifier: 'databasestack',
+      instanceIdentifier: environment === 'dev' ? 'dev-db-carecapture-ai' : 'databasestack',
       // removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
@@ -63,19 +65,19 @@ export class DatabaseStack extends cdk.Stack {
 
     // Store database credentials in SSM Parameter Store
     new ssm.StringParameter(this, 'DBEndpoint', {
-      parameterName: '/database/endpoint',
+      parameterName: environment === 'dev' ? `/database/${environment}/endpoint` : '/database/endpoint',
       stringValue: this.dbEndpoint,
     });
 
     new ssm.StringParameter(this, 'DBPort', {
-      parameterName: '/database/port',
+      parameterName: environment === 'dev' ? `/database/${environment}/port` : '/database/port',
       stringValue: this.dbPort,
     });
 
     const secretArn = instance.secret?.secretArn;
     if (secretArn) {
       new ssm.StringParameter(this, 'DBSecretArn', {
-        parameterName: '/database/secret-arn',
+        parameterName: environment === 'dev' ? `/database/${environment}/secret-arn` : '/database/secret-arn',
         stringValue: secretArn,
       });
     }

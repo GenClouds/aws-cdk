@@ -76,6 +76,10 @@ export class AppRunnerStack extends cdk.Stack {
       'Allow common webhook ports'
     );
 
+    // Get environment context
+    const environment = this.node.tryGetContext('environment') || 'prod';
+    const stackSuffix = environment === 'dev' ? 'Dev' : '';
+
     // Create VPC connector for App Runner
     const vpcConnector = new apprunner.VpcConnector(this, 'VpcConnector', {
       vpc: props.vpc,
@@ -83,7 +87,7 @@ export class AppRunnerStack extends cdk.Stack {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
       }),
       securityGroups: [appRunnerSG],
-      vpcConnectorName: `apprunner-connector-${this.region}`
+      vpcConnectorName: `apprunner-connector-${environment}-${this.region}`
     });
 
     // Create Node.js App Runner Service
@@ -92,7 +96,7 @@ export class AppRunnerStack extends cdk.Stack {
         imageConfiguration: {
           port: 3000,
           environmentVariables: {
-            REDIS_HOST: cdk.Fn.importValue('CacheStack-endpoint'),
+            REDIS_HOST: cdk.Fn.importValue(`CacheStack${stackSuffix}-endpoint`),
             REDIS_PORT: '6379',
             REDIS_TLS_DISABLED: 'true'  // Disable TLS for Redis connection
           }
@@ -110,7 +114,7 @@ export class AppRunnerStack extends cdk.Stack {
         imageConfiguration: {
           port: 8000,
           environmentVariables: {
-            REDIS_HOST: cdk.Fn.importValue('CacheStack-endpoint'),
+            REDIS_HOST: cdk.Fn.importValue(`CacheStack${stackSuffix}-endpoint`),
             REDIS_PORT: '6379',
             REDIS_TLS_DISABLED: 'true'  // Disable TLS for Redis connection
           }
@@ -126,36 +130,44 @@ export class AppRunnerStack extends cdk.Stack {
     this.nodejsServiceName = nodejsService.serviceName;
     this.fastapiServiceName = fastapiService.serviceName;
 
+
+
+
+
     // Add outputs
     new cdk.CfnOutput(this, 'NodejsServiceName', {
       value: nodejsService.serviceName,
       description: 'The name of the Node.js App Runner service',
-      exportName: 'NodejsAppRunnerServiceName',
+      exportName: stackSuffix ? `NodejsAppRunnerServiceName${stackSuffix}` : 'NodejsAppRunnerServiceName',
     });
 
     new cdk.CfnOutput(this, 'FastAPIServiceName', {
       value: fastapiService.serviceName,
       description: 'The name of the FastAPI App Runner service',
-      exportName: 'FastAPIAppRunnerServiceName',
+      exportName: stackSuffix ? `FastAPIAppRunnerServiceName${stackSuffix}` : 'FastAPIAppRunnerServiceName',
     });
 
     new cdk.CfnOutput(this, 'NodejsServiceUrl', {
       value: nodejsService.serviceUrl,
       description: 'The URL of the Node.js App Runner service',
-      exportName: 'NodejsAppRunnerServiceUrl',
+      exportName: stackSuffix ? `NodejsAppRunnerServiceUrl${stackSuffix}` : 'NodejsAppRunnerServiceUrl',
     });
 
     new cdk.CfnOutput(this, 'FastAPIServiceUrl', {
       value: fastapiService.serviceUrl,
       description: 'The URL of the FastAPI App Runner service',
-      exportName: 'FastAPIAppRunnerServiceUrl',
+      exportName: stackSuffix ? `FastAPIAppRunnerServiceUrl${stackSuffix}` : 'FastAPIAppRunnerServiceUrl',
     });
 
     // Add VPC Connector output
     new cdk.CfnOutput(this, 'VpcConnectorArn', {
       value: vpcConnector.vpcConnectorArn,
       description: 'The ARN of the VPC Connector',
-      exportName: 'AppRunnerVpcConnectorArn',
+      exportName: stackSuffix ? `AppRunnerVpcConnectorArn${stackSuffix}` : 'AppRunnerVpcConnectorArn',
     });
+
+
+
+
   }
 }

@@ -9,16 +9,52 @@ import { CacheStack } from '../lib/cache-stack';
 
 const app = new cdk.App();
 
-const vpcStack = new VpcStack(app, 'VpcStack');
-const databaseStack = new DatabaseStack(app, 'DatabaseStack', { 
-  vpc: vpcStack.vpc 
+const environment = app.node.tryGetContext('environment') || 'prod';
+const branch = app.node.tryGetContext('branch') || 'main';
+
+// Keep prod names unchanged, only add Dev suffix for development
+const stackSuffix = environment === 'dev' ? 'Dev' : '';
+
+const vpcStack = new VpcStack(app, `VpcStack${stackSuffix}`, {
+  tags: {
+    Environment: environment,
+    Branch: branch
+  }
 });
-const ecrStack = new EcrStack(app, 'EcrStack');
-const cacheStack = new CacheStack(app, 'CacheStack', {
-  vpc: vpcStack.vpc
+
+// Create database stack only for develop branch
+let databaseStack: DatabaseStack | undefined;
+if (branch === 'develop') {
+  databaseStack = new DatabaseStack(app, `DatabaseStack${stackSuffix}`, { 
+    vpc: vpcStack.vpc,
+    tags: {
+      Environment: environment,
+      Branch: branch
+    }
+  });
+}
+
+const ecrStack = new EcrStack(app, `EcrStack${stackSuffix}`, {
+  tags: {
+    Environment: environment,
+    Branch: branch
+  }
 });
-new AppRunnerStack(app, 'AppRunnerStack', {
+
+const cacheStack = new CacheStack(app, `CacheStack${stackSuffix}`, {
+  vpc: vpcStack.vpc,
+  tags: {
+    Environment: environment,
+    Branch: branch
+  }
+});
+
+new AppRunnerStack(app, `AppRunnerStack${stackSuffix}`, {
   nodejsRepo: ecrStack.nodejsRepo,
   fastapiRepo: ecrStack.fastapiRepo,
-  vpc: vpcStack.vpc
+  vpc: vpcStack.vpc,
+  tags: {
+    Environment: environment,
+    Branch: branch
+  }
 });

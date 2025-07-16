@@ -9,14 +9,16 @@ export class EcrStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const environment = this.node.tryGetContext('environment') || 'prod';
+
     this.nodejsRepo = new ecr.Repository(this, 'NodejsRepo', {
-      repositoryName: 'nodejs-app',
+      repositoryName: environment === 'dev' ? `nodejs-app-${environment}` : 'nodejs-app',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteImages: true,
     });
 
     this.fastapiRepo = new ecr.Repository(this, 'FastAPIRepo', {
-      repositoryName: 'fastapi-app',
+      repositoryName: environment === 'dev' ? `fastapi-app-${environment}` : 'fastapi-app',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteImages: true,
     });

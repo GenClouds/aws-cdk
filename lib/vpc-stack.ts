@@ -9,7 +9,13 @@ export class VpcStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const environment = this.node.tryGetContext('environment') || 'prod';
+    
+    // Different CIDR blocks for different environments
+    const cidrBlock = environment === 'dev' ? '10.1.0.0/16' : '10.0.0.0/16';
+
     this.vpc = new ec2.Vpc(this, 'MainVPC', {
+      cidr: cidrBlock,
       maxAzs: 2,
       natGateways: 1,
       subnetConfiguration: [

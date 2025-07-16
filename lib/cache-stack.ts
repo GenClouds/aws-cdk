@@ -15,12 +15,14 @@ export class CacheStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: CacheStackProps) {
     super(scope, id, props);
 
+    const environment = this.node.tryGetContext('environment') || 'prod';
+
     // Create a security group for ElastiCache
     const cacheSecurityGroup = new ec2.SecurityGroup(this, 'CacheSecurityGroup', {
       vpc: props.vpc,
       description: 'Security group for ElastiCache',
       allowAllOutbound: true,
-      securityGroupName: `${this.stackName}-cache-sg`,
+      securityGroupName: environment === 'dev' ? `cache-sg-${environment}` : `${this.stackName}-cache-sg`,
     });
 
     // Allow inbound access from anywhere (we'll restrict this to specific IPs)
@@ -34,7 +36,7 @@ export class CacheStack extends cdk.Stack {
     const subnetGroup = new elasticache.CfnSubnetGroup(this, 'CacheSubnetGroup', {
       description: 'Subnet group for ElastiCache',
       subnetIds: props.vpc.publicSubnets.map(subnet => subnet.subnetId),
-      cacheSubnetGroupName: `${this.stackName}-subnet-group`,
+      cacheSubnetGroupName: environment === 'dev' ? `cache-subnet-group-${environment}` : `${this.stackName}-subnet-group`,
     });
 
     // Create a parameter group for Redis
@@ -48,7 +50,7 @@ export class CacheStack extends cdk.Stack {
       engine: 'redis',
       cacheNodeType: 'cache.t4g.micro',
       numCacheNodes: 1,
-      clusterName: `${this.stackName}-redis`,
+      clusterName: environment === 'dev' ? `redis-${environment}` : `${this.stackName}-redis`,
       vpcSecurityGroupIds: [cacheSecurityGroup.securityGroupId],
       cacheSubnetGroupName: subnetGroup.ref,
       engineVersion: '7.0',
@@ -71,7 +73,8 @@ export class CacheStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CacheEndpoint', {
       value: this.cacheEndpoint,
       description: 'Redis endpoint address',
-      exportName: `${this.stackName}-endpoint`,
+      // exportName: `${this.stackName}-endpoint`,
+      exportName: `CacheStackDev-endpoint`,
     });
 
     new cdk.CfnOutput(this, 'CachePort', {
@@ -93,7 +96,10 @@ export class CacheStack extends cdk.Stack {
     });
 
     // Add tags
-    cdk.Tags.of(this).add('project', this.node.tryGetContext('tags').project);
-    cdk.Tags.of(this).add('environment', this.node.tryGetContext('tags').environment);
+    const tags = this.node.tryGetContext('tags') || {};
+    if (tags.project) {
+      cdk.Tags.of(this).add('project', tags.project);
+    }
+    cdk.Tags.of(this).add('environment', environment);
   }
 }
