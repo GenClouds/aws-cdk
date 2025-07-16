@@ -23,6 +23,7 @@ on:
           - all
           - AppRunnerStackDev
           - CacheStackDev
+          - DatabaseStackDev
           - EcrStackDev
           - VpcStackDev
 
@@ -97,6 +98,8 @@ jobs:
           cdk destroy AppRunnerStackDev --force --context environment=dev --context branch=develop || true
           echo "Destroying Cache Stack..."
           cdk destroy CacheStackDev --force --context environment=dev --context branch=develop || true
+          echo "Destroying Database Stack..."
+          cdk destroy DatabaseStackDev --force --context environment=dev --context branch=develop || true
           echo "Destroying ECR Stack..."
           cdk destroy EcrStackDev --force --context environment=dev --context branch=develop || true
           echo "Destroying VPC Stack..."
@@ -117,6 +120,14 @@ jobs:
           echo "Proceeding with destruction in 5 seconds..."
           sleep 5
           cdk destroy CacheStackDev --force --context environment=dev --context branch=develop
+
+      - name: Destroy Database Stack
+        if: github.event.inputs.action == 'destroy' && github.event.inputs.stack == 'DatabaseStackDev'
+        run: |
+          echo "⚠️ WARNING: Destroying Database Stack"
+          echo "Proceeding with destruction in 5 seconds..."
+          sleep 5
+          cdk destroy DatabaseStackDev --force --context environment=dev --context branch=develop
 
       - name: Destroy ECR Stack
         if: github.event.inputs.action == 'destroy' && github.event.inputs.stack == 'EcrStackDev'

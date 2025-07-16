@@ -49,21 +49,18 @@ const cacheStack = new CacheStack(app, environment === 'dev' ? 'CacheStackDev' :
   }
 });
 
-// Create database stack only for production
-let databaseStack: DatabaseStack | undefined;
-if (environment === 'prod') {
-  databaseStack = new DatabaseStack(app, 'DatabaseStack', { 
-    vpc: vpcStack.vpc,
-    env: {
-      account: process.env.CDK_DEFAULT_ACCOUNT,
-      region: process.env.CDK_DEFAULT_REGION,
-    },
-    tags: {
-      Environment: environment,
-      Branch: branch
-    }
-  });
-}
+// Create database stack for both environments
+const databaseStack = new DatabaseStack(app, environment === 'dev' ? 'DatabaseStackDev' : 'DatabaseStack', { 
+  vpc: vpcStack.vpc,
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
+  tags: {
+    Environment: environment,
+    Branch: branch
+  }
+});
 
 new AppRunnerStack(app, environment === 'dev' ? 'AppRunnerStackDev' : 'AppRunnerStack', {
   nodejsRepo: ecrStack.nodejsRepo,
