@@ -12,47 +12,64 @@ const app = new cdk.App();
 const environment = app.node.tryGetContext('environment') || 'prod';
 const branch = app.node.tryGetContext('branch') || 'main';
 
-// Keep prod names unchanged, only add Dev suffix for development
+// Environment-specific stack naming - keep prod names unchanged
 const stackSuffix = environment === 'dev' ? 'Dev' : '';
 
-const vpcStack = new VpcStack(app, `VpcStack${stackSuffix}`, {
+const vpcStack = new VpcStack(app, environment === 'dev' ? 'VpcStackDev' : 'VpcStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
   tags: {
     Environment: environment,
     Branch: branch
   }
 });
 
-// Create database stack only for develop branch
-let databaseStack: DatabaseStack | undefined;
-if (branch === 'develop') {
-  databaseStack = new DatabaseStack(app, `DatabaseStack${stackSuffix}`, { 
-    vpc: vpcStack.vpc,
-    tags: {
-      Environment: environment,
-      Branch: branch
-    }
-  });
-}
-
-const ecrStack = new EcrStack(app, `EcrStack${stackSuffix}`, {
+const ecrStack = new EcrStack(app, environment === 'dev' ? 'EcrStackDev' : 'EcrStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
   tags: {
     Environment: environment,
     Branch: branch
   }
 });
 
-const cacheStack = new CacheStack(app, `CacheStack${stackSuffix}`, {
+const cacheStack = new CacheStack(app, environment === 'dev' ? 'CacheStackDev' : 'CacheStack', {
   vpc: vpcStack.vpc,
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
   tags: {
     Environment: environment,
     Branch: branch
   }
 });
 
-new AppRunnerStack(app, `AppRunnerStack${stackSuffix}`, {
+// Create database stack for both environments
+const databaseStack = new DatabaseStack(app, environment === 'dev' ? 'DatabaseStackDev' : 'DatabaseStack', { 
+  vpc: vpcStack.vpc,
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
+  tags: {
+    Environment: environment,
+    Branch: branch
+  }
+});
+
+new AppRunnerStack(app, environment === 'dev' ? 'AppRunnerStackDev' : 'AppRunnerStack', {
   nodejsRepo: ecrStack.nodejsRepo,
   fastapiRepo: ecrStack.fastapiRepo,
   vpc: vpcStack.vpc,
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
   tags: {
     Environment: environment,
     Branch: branch
