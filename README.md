@@ -207,7 +207,7 @@ jobs:
         run: cdk deploy --all --require-approval never
 ```
 
-## Troubleshooting
+## Troubleshooting <<<<<
 
 - If GitHub Actions deployment fails with permission errors, check the AWS role ARN and trust relationship configuration
 - For ECR access issues, verify the ECR repository policy includes the correct permissions for App Runner
