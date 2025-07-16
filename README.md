@@ -2,7 +2,7 @@
 
 This repository contains the AWS CDK infrastructure code for deploying Node.js and FastAPI applications using AWS CDK with GitHub Actions CI/CD.
 
-## Prerequisites
+## Prerequisites :
 
 - Node.js 18 or later installed
 - AWS CDK CLI installed (`npm install -g aws-cdk`)
