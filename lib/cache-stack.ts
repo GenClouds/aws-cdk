@@ -16,6 +16,7 @@ export class CacheStack extends cdk.Stack {
     super(scope, id, props);
 
     const environment = this.node.tryGetContext('environment') || 'prod';
+    const stackSuffix = environment === 'dev' ? 'Dev' : '';
 
     // Create a security group for ElastiCache
     const cacheSecurityGroup = new ec2.SecurityGroup(this, 'CacheSecurityGroup', {
@@ -73,20 +74,19 @@ export class CacheStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CacheEndpoint', {
       value: this.cacheEndpoint,
       description: 'Redis endpoint address',
-      // exportName: `${this.stackName}-endpoint`,
-      exportName: `CacheStackDev-endpoint`,
+      exportName: environment === 'dev' ? 'CacheStackDev:RedisEndpoint' : 'CacheStack-endpoint',
     });
 
     new cdk.CfnOutput(this, 'CachePort', {
       value: this.cachePort,
       description: 'Redis endpoint port',
-      exportName: `${this.stackName}-port`,
+      exportName: environment === 'dev' ? 'CacheStackDev:RedisPort' : 'CacheStack-port',
     });
 
     new cdk.CfnOutput(this, 'CacheSecurityGroupId', {
       value: cacheSecurityGroup.securityGroupId,
       description: 'Redis Security Group ID',
-      exportName: `${this.stackName}-security-group-id`,
+      exportName: environment === 'dev' ? 'CacheStackDev:SecurityGroupId' : 'CacheStack-security-group-id',
     });
 
     // Add a note about TLS being disabled
