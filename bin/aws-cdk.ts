@@ -6,6 +6,7 @@ import { DatabaseStack } from '../lib/database-stack';
 import { EcrStack } from '../lib/ecr-stack';
 import { AppRunnerStack } from '../lib/apprunner-stack';
 import { CacheStack } from '../lib/cache-stack';
+import { CloudFrontStack } from '../lib/cloudfront-stack';
 
 const app = new cdk.App();
 
@@ -62,10 +63,24 @@ const databaseStack = new DatabaseStack(app, environment === 'dev' ? 'DatabaseSt
   }
 });
 
-new AppRunnerStack(app, environment === 'dev' ? 'AppRunnerStackDev' : 'AppRunnerStack', {
+const appRunnerStack = new AppRunnerStack(app, environment === 'dev' ? 'AppRunnerStackDev' : 'AppRunnerStack', {
   nodejsRepo: ecrStack.nodejsRepo,
   fastapiRepo: ecrStack.fastapiRepo,
   vpc: vpcStack.vpc,
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
+  tags: {
+    Environment: environment,
+    Branch: branch
+  }
+});
+
+// Create CloudFront stack for both environments
+new CloudFrontStack(app, environment === 'dev' ? 'CloudFrontStackDev' : 'CloudFrontStack', {
+  nodejsServiceUrl: cdk.Fn.importValue(environment === 'dev' ? 'NodejsAppRunnerServiceUrlDev' : 'NodejsAppRunnerServiceUrl'),
+  fastapiServiceUrl: cdk.Fn.importValue(environment === 'dev' ? 'FastAPIAppRunnerServiceUrlDev' : 'FastAPIAppRunnerServiceUrl'),
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
