@@ -23,6 +23,7 @@ on:
           - all
           - AppRunnerStack
           - CacheStack
+          - CloudFrontStack
           - DatabaseStack
           - EcrStack
           - VpcStack
@@ -94,6 +95,8 @@ jobs:
           echo "⚠️ WARNING: This will destroy all CDK managed resources!"
           echo "Proceeding with destruction in 10 seconds..."
           sleep 10
+          echo "Destroying CloudFront Stack..."
+          cdk destroy CloudFrontStack --force --context environment=prod --context branch=main || true
           echo "Destroying AppRunner Stack..."
           cdk destroy AppRunnerStack --force --context environment=prod --context branch=main || true
           echo "Destroying Cache Stack..."
@@ -136,6 +139,14 @@ jobs:
           echo "Proceeding with destruction in 5 seconds..."
           sleep 5
           cdk destroy EcrStack --force --context environment=prod --context branch=main
+
+      - name: Destroy CloudFront Stack
+        if: github.event.inputs.action == 'destroy' && github.event.inputs.stack == 'CloudFrontStack'
+        run: |
+          echo "⚠️ WARNING: Destroying CloudFront Stack"
+          echo "Proceeding with destruction in 5 seconds..."
+          sleep 5
+          cdk destroy CloudFrontStack --force --context environment=prod --context branch=main
 
       - name: Destroy VPC Stack
         if: github.event.inputs.action == 'destroy' && github.event.inputs.stack == 'VpcStack'
