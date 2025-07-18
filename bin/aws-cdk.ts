@@ -78,7 +78,7 @@ const appRunnerStack = new AppRunnerStack(app, environment === 'dev' ? 'AppRunne
 });
 
 // Create CloudFront stack for both environments
-new CloudFrontStack(app, environment === 'dev' ? 'CloudFrontStackDev' : 'CloudFrontStack', {
+const cloudFrontStack = new CloudFrontStack(app, environment === 'dev' ? 'CloudFrontStackDev' : 'CloudFrontStack', {
   nodejsServiceUrl: cdk.Fn.importValue(environment === 'dev' ? 'NodejsAppRunnerServiceUrlDev' : 'NodejsAppRunnerServiceUrl'),
   fastapiServiceUrl: cdk.Fn.importValue(environment === 'dev' ? 'FastAPIAppRunnerServiceUrlDev' : 'FastAPIAppRunnerServiceUrl'),
   env: {
@@ -90,3 +90,6 @@ new CloudFrontStack(app, environment === 'dev' ? 'CloudFrontStackDev' : 'CloudFr
     Branch: branch
   }
 });
+
+// Add explicit dependency on AppRunner stack
+cloudFrontStack.addDependency(appRunnerStack);
