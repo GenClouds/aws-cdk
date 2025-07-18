@@ -17,7 +17,7 @@ This repository contains the AWS CDK infrastructure code for deploying Node.js a
 - App Runner services for both applications
 - SSM Parameters for database configuration
 
-## AWS OIDC Connection Setup
+## AWS OIDC Connection Setup : 
 
 For GitHub Actions to deploy to AWS securely, you need to set up an OpenID Connect (OIDC) provider:
 
