@@ -79,8 +79,6 @@ const appRunnerStack = new AppRunnerStack(app, environment === 'dev' ? 'AppRunne
 
 // Create CloudFront stack for both environments
 const cloudFrontStack = new CloudFrontStack(app, environment === 'dev' ? 'CloudFrontStackDev' : 'CloudFrontStack', {
-  nodejsServiceUrl: cdk.Fn.importValue(environment === 'dev' ? 'NodejsAppRunnerServiceUrlDev' : 'NodejsAppRunnerServiceUrl'),
-  fastapiServiceUrl: cdk.Fn.importValue(environment === 'dev' ? 'FastAPIAppRunnerServiceUrlDev' : 'FastAPIAppRunnerServiceUrl'),
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
